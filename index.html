@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="km"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b5cab"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="GN CVC">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<title>GN CVC</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--bg:#f3f6fb;--card:#fff;--ink:#14213d;--mut:#5b6b85;--pri:#0b5cab;--pri2:#084a8c;--line:#d9e2ef;--ok:#1b7f4b;--warn:#b26a00;--err:#b3261e;--okbg:#e6f4ec;--warnbg:#fff3df;--errbg:#fde8e6;--acc:#f28c00}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'Noto Sans Khmer','Inter',system-ui,sans-serif}
+header{background:var(--pri);color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+header h1{font-size:17px;margin:0;flex:1 1 260px}
+header select,header input{padding:6px 8px;border-radius:6px;border:0;font:inherit;max-width:170px}
+nav{display:flex;gap:4px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--line);padding:0 8px;position:sticky;top:0;z-index:5}
+nav button{border:0;background:none;padding:12px 14px;font:inherit;color:var(--mut);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav button.on{color:var(--pri);border-color:var(--pri);font-weight:700}
+main{max-width:1250px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+.card h2,.card h3{margin:0 0 10px;font-size:16px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
+.stat b{display:block;font-size:24px;color:var(--pri)}.stat span{color:var(--mut);font-size:13px}
+.stat.w b{color:var(--warn)}.stat.e b{color:var(--err)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#eef3fa;font-weight:600;position:sticky;top:0}
+.tw{overflow:auto;max-height:520px;border:1px solid var(--line);border-radius:8px}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+button.b,label.b{display:inline-block;background:var(--pri);color:#fff;border:0;border-radius:8px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;min-height:42px}
+button.b:hover{background:var(--pri2)}button.b:disabled{opacity:.45;cursor:not-allowed}
+button.b.s{background:#fff;color:var(--pri);border:1px solid var(--pri)}button.b.r{background:var(--err)}button.b.a{background:var(--acc)}
+input,select,textarea{font:inherit;padding:8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);max-width:100%}
+td input,td select{width:100%;min-width:70px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:10px}
+.row>div{display:flex;flex-direction:column;gap:3px}.row label{font-size:12px;color:var(--mut)}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;background:#e3edf9;color:var(--pri2);white-space:nowrap}
+.tag.ok{background:var(--okbg);color:var(--ok)}.tag.warn{background:var(--warnbg);color:var(--warn)}.tag.err{background:var(--errbg);color:var(--err)}
+.msg{padding:8px 12px;border-radius:8px;margin:6px 0;font-size:14px}
+.msg.warn{background:var(--warnbg);color:#6b4100}.msg.err{background:var(--errbg);color:var(--err)}.msg.ok{background:var(--okbg);color:var(--ok)}.msg.info{background:#e3edf9;color:var(--pri2)}
+.bar{height:12px;background:#e3e9f3;border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--pri)}.bar i.o{background:var(--err)}
+.modal{position:fixed;inset:0;background:rgba(10,25,50,.55);display:none;z-index:20;overflow:auto;padding:12px}
+.modal.on{display:block}.modal .in{background:#fff;max-width:1000px;margin:0 auto;border-radius:12px;padding:16px}
+.split{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+@media(max-width:700px){.split{grid-template-columns:1fr}main{padding:10px}}
+small,.mut{color:var(--mut)}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#14213d;color:#fff;padding:10px 16px;border-radius:8px;display:none;z-index:50;max-width:90vw}
+@media print{header,nav,.noprint,button{display:none!important}.card{border:0}.tw{max-height:none;overflow:visible}}
+body.locked header,body.locked nav,body.locked main{display:none}
+#login{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+body.locked #login{display:flex}
+#login .box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px;width:100%;max-width:360px;text-align:center}
+#login .box input{width:100%;margin-bottom:10px}#login .err{color:var(--err);background:var(--errbg);border-radius:8px;padding:8px;margin-bottom:10px;display:none}
+.seg{display:flex;height:12px;border-radius:6px;overflow:hidden;background:#e3e9f3;margin-bottom:3px}.seg i{display:block;height:100%}.s-done{background:var(--ok)}.s-staff{background:var(--pri)}.s-cvc{background:var(--acc)}.s-cant{background:var(--err)}.lg{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:3px;vertical-align:middle}
+
+body{padding-bottom:90px;-webkit-tap-highlight-color:transparent}
+input,select,textarea{font-size:16px}
+header{position:sticky;top:0;z-index:6;padding-top:calc(10px + env(safe-area-inset-top));flex-wrap:nowrap}
+header h1{font-size:16px;flex:1}header button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:8px;min-width:40px;height:38px;font:inherit}
+main{max-width:640px}
+.ch{cursor:pointer}.top{display:flex;justify-content:space-between;gap:8px}.meta{display:flex;justify-content:space-between;margin-top:6px;font-size:13px;color:var(--mut)}.late{color:var(--err);font-weight:700}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px}.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:9px 14px;white-space:nowrap;font:inherit;color:var(--mut)}.chip.on{background:var(--pri);color:#fff;border-color:var(--pri);font-weight:700}
+.step{display:flex}.step button{width:44px;border:1px solid var(--line);background:#eef3fa;font-size:22px;color:var(--pri);border-radius:8px 0 0 8px}.step button:last-child{border-radius:0 8px 8px 0}.step input{width:100%;min-width:0;text-align:center;border-radius:0}
+.r3{display:grid;grid-template-columns:1.3fr 1fr .8fr;gap:8px;margin-top:8px}.r3 label{font-size:12px;color:var(--mut);display:block}.r3 input{width:100%}
+.lh{display:flex;justify-content:space-between;gap:8px}.x{border:0;background:var(--errbg);color:var(--err);border-radius:8px;width:38px;height:38px;font-size:16px}
+.stot{text-align:right;margin-top:8px;font-weight:700;color:var(--pri)}
+.bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;z-index:8}.bottom .b{flex:1}
+.sheet{position:fixed;inset:0;background:rgba(10,25,50,.55);z-index:20;display:flex;align-items:flex-end}.sheet>div{background:#fff;width:100%;max-height:88vh;border-radius:16px 16px 0 0;padding:14px;overflow:auto}
+.pi{display:flex;justify-content:space-between;width:100%;text-align:left;background:#fff;border:0;border-bottom:1px solid var(--line);padding:14px 4px;font:inherit;color:var(--ink)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bk{display:flex;align-items:center;gap:10px;margin-bottom:12px}.bk>button{min-width:44px}
+.big{width:100%;margin:4px 0 12px}.empty{text-align:center;color:var(--mut);padding:26px 10px}
+</style></head><body>
+<header><h1>🎁 GN CVC<br><small style="color:#cfe0f5" id="who"></small></h1><button id="bl" title="Language">ខ្មែរ</button><button id="bo" title="Log out">⎋</button></header>
+<main id="app"></main><div id="bar"></div><div id="toast"></div>
+<div id="login" style="display:flex"><div class="box"><div style="font-size:36px">🔐</div><h2 style="margin:6px 0 2px">GN CVC · MBR2</h2><div class="mut" style="margin-bottom:14px">ចូលដោយគណនី Dashboard MBR2 · Log in with your MBR2 account</div><div class="err" id="lerr"></div><input id="luser" placeholder="ឈ្មោះអ្នកប្រើ · Username" autocomplete="username"><input id="lpin" type="password" inputmode="numeric" maxlength="8" placeholder="PIN" autocomplete="current-password"><button class="b" id="lgo" style="width:100%">ចូល · Log in</button><div class="mut" id="lstat" style="margin-top:10px;font-size:12px"></div></div></div>
+<script>
+const STATUSES=['Imported','Validated','Published to CVC','Draft Request','Submitted by CVC','Supervisor Review','Budget and Finance Review','Approved for Purchasing','Purchasing in Progress','Purchased','Distribution and Receipt Confirmation','Reconciliation','Closed'];
+const STKH={'Imported':'បាននាំចូល','Validated':'បានផ្ទៀងផ្ទាត់','Published to CVC':'បានផ្សាយទៅ CVC','Draft Request':'សំណើព្រាង','Submitted by CVC':'CVC បានដាក់ស្នើ','Supervisor Review':'ត្រួតពិនិត្យដោយអ្នកគ្រប់គ្រង','Budget and Finance Review':'ត្រួតពិនិត្យថវិកា និងហិរញ្ញវត្ថុ','Approved for Purchasing':'អនុម័តឱ្យទិញ','Purchasing in Progress':'កំពុងទិញ','Purchased':'បានទិញរួច','Distribution and Receipt Confirmation':'ចែកចាយ និងបញ្ជាក់ការទទួល','Reconciliation':'ផ្ទៀងផ្ទាត់ចុងក្រោយ','Closed':'បិទបញ្ជី','Rejected':'បដិសេធ'};
+const ROLES={admin:['System Administrator','អ្នកគ្រប់គ្រងប្រព័ន្ធ'],gnc:['GN Coordinator','អ្នកសម្របសម្រួល GN'],cvc:['CVC User','អ្នកសម្របសម្រួលស្ម័គ្រចិត្តសហគមន៍ (CVC)'],sup:['ADP / Programme Supervisor','អ្នកគ្រប់គ្រងកម្មវិធី'],fin:['Finance Reviewer','អ្នកត្រួតពិនិត្យហិរញ្ញវត្ថុ'],pur:['Purchasing Officer','មន្ត្រីទិញ'],fap:['Final Approver','អ្នកអនុម័តចុងក្រោយ'],aud:['Auditor / Read-only','សវនករ / មើលតែប៉ុណ្ណោះ']};
+
+const t=(en,km)=>S.ui.lang==='en'?en:S.ui.lang==='km'?km:km+' / '+en;
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const usd2=n=>n==null||isNaN(n)?'—':'$'+Number(n).toFixed(2);
+const usd=n=>n==null||isNaN(n)?'—':'$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
+const khr=n=>n==null||isNaN(n)?'—':Number(n).toLocaleString('en-US',{maximumFractionDigits:0})+' ៛';
+const catName=id=>(S.cats.find(c=>c.id===id)||{name:id}).name;
+const today=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
+function daysLeft(iso){if(!iso)return null;const [y,m,d]=iso.split('-').map(Number);return Math.round((new Date(y,m-1,d)-today())/864e5)}
+const norm=x=>String(x==null?'':x).replace(/\s+/g,' ').trim().toLowerCase();
+const hasKh=s=>/[\u1780-\u17FF]/.test(String(s==null?'':s));
+const stTag=s=>`<span class="tag ${s==='Rejected'?'err':s==='Approved for Purchasing'?'ok':''}">${esc(S.ui.lang==='en'?s:S.ui.lang==='km'?STKH[s]:STKH[s]+' / '+s)}</span>`;
+function FYOF(iso){const m=/^(\d{4})-(\d{2})/.exec(iso||'');return m?'FY'+String((+m[1]+(+m[2]>=10?1:0))%100).padStart(2,'0'):''}
+function gnOf(rc){return Object.values(S.gn).filter(g=>g.rc===rc).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||a.key.localeCompare(b.key))}
+function gnLimit(g){return (g.child!=null?g.child:(g.total||0))*(g.rate||S.rate)}
+function manualCant(g){return (g.cantParts||[]).reduce((s,x)=>s+(+x.khr||0),0)}
+function subLines(rc){const o=[];(S.hist[rc]||[]).forEach(r=>r.lines.forEach(l=>o.push(l)));return o}
+function gnProgress(rc){return subLines(rc).length>0||gnOf(rc).some(g=>(g.cantParts||[]).length)}
+const GST={done:['Done','បានទិញរួចរាល់','ok'],pending_staff:['Pending staff processing','រង់ចាំបុគ្គលិកដំណើរការ',''],pending_cvc:['Pending CVC proposal','រង់ចាំ CVC រៀបចំសំណើ','warn'],cant:["Can't process",'មិនអាចដំណើរការបាន','err'],partial:['Partly processed','ដំណើរការមួយផ្នែក','warn'],prior:['Done before this app','ដំណើរការរួចមុនប្រព័ន្ធនេះ','ok'],gone:['Closed in Horizon','បិទក្នុង Horizon',''],released:['Released to CVC','ត្រឡប់ទៅ CVC វិញ','warn']};
+function gstTag(k){const x=GST[k]||GST.partial;return `<span class="tag ${x[2]}">${esc(t(x[0],x[1]))}</span>`}
+function gnState(p){const v=[['done',p.done],['pending_staff',p.staff],['pending_cvc',p.cvc],['cant',p.cant]].filter(x=>x[1]>0.5);return v.length===1?v[0][0]:v.length?'partial':'pending_cvc'}
+/* Splits every item amount over the child's GN entries, oldest GN first. noCur=true ignores the request being prepared now. */
+function gnParts(rc,noCur){const c=S.children[rc];const P=gnOf(rc).filter(g=>!g.prior&&!g.gone).map(g=>({g,limit:gnLimit(g),done:0,staff:0,cvc:0,cant:Math.min(gnLimit(g),manualCant(g))}));let over=0;
+ const feed=(l,k)=>{let a=lineTotal(l);for(const p of P){if(a<=0.0001)break;const cap=p.limit-p.done-p.staff-p.cant;if(cap<=0.0001)continue;const x=Math.min(cap,a);p[k]+=x;a-=x}over+=Math.max(0,a)};
+ subLines(rc).forEach(l=>{if(l.ps==='released')return;feed(l,l.ps==='done'?'done':l.ps==='cant'?'cant':'staff')});
+ if(!noCur&&c&&STATUSES.indexOf(c.status)>=STATUSES.indexOf('Submitted by CVC'))getReq(rc).lines.forEach(l=>feed(l,'staff'));
+ P.forEach(p=>{p.cvc=Math.max(0,p.limit-p.done-p.staff-p.cant);p.state=gnState(p)});return{P,over}}
+function poolKHR(rc){return gnParts(rc,true).P.reduce((s,p)=>s+p.cvc,0)}   /* budget still free for a NEW request: old / processed GN budget is already used up */
+const pBudget=c=>poolKHR(c.rcId)/(c.rate||S.rate);
+const itemKey=l=>String(l.cat||'')+'|'+norm(l.name).replace(/\s+/g,'');
+function prevItem(rc,l){if(!l.name)return null;const k=itemKey(l),sc=S.ui.dupScope||'fy',fy=FYOF(new Date().toISOString().slice(0,10));
+ for(const r of (S.hist[rc]||[])){if(sc==='fy'&&FYOF(r.memoAt)!==fy)continue;for(const x of r.lines){if(x.ps==='released'||x.ps==='cant')continue;if(itemKey(x)===k)return{memoId:r.memoId,at:r.memoAt,ps:x.ps}}}return null}
+function refreshChild(rc){const c=S.children[rc];if(!c)return;const all=gnOf(rc).filter(g=>!g.prior&&!g.gone);if(!all.length)return;const {P}=gnParts(rc,true);
+ const act=P.filter(p=>p.state!=='done'&&p.state!=='cant'&&p.limit>0.5).map(p=>p.g);const use=act.length?act:all;
+ const sm=f=>use.some(g=>g[f]!=null)?use.reduce((s,g)=>s+(Number(g[f])||0),0):null;
+ c.total=sm('total');c.community=sm('community');c.child=sm('child');c.gnCount=act.length;
+ const dues=act.map(g=>g.due).filter(Boolean).sort();c.due=dues[0]||c.due||null;
+ const ds=gnOf(rc).map(g=>g.date).filter(Boolean).sort();c.gnLast=ds[ds.length-1]||c.gnLast||'';
+ if(act.length)c.rate=act[act.length-1].rate||c.rate;
+ const fy=FYOF(c.gnLast);c.gnFY=fy;c.gnYear=gnOf(rc).filter(g=>!g.legacy&&FYOF(g.date)===fy).length}
+function syncStatus(rc){const c=S.children[rc];if(!c||!['Purchasing in Progress','Purchased'].includes(c.status))return;const pool=poolKHR(rc),pend=subLines(rc).some(l=>l.ps==='staff');
+ c.status=pool>0.5?'Published to CVC':pend?'Purchasing in Progress':'Purchased'}
+function ledger(rc){const c=S.children[rc],r=getReq(rc);const rate=c.rate||S.rate;const limit=poolKHR(rc);const req=r.lines.reduce((s,l)=>s+lineTotal(l),0);
+ const warns=[];const seen={};r.lines.forEach((l,i)=>{if(!(Number(l.qty)>0))warns.push(`Line ${i+1}: quantity is zero`);if(!(Number(l.price)>0))warns.push(`Line ${i+1}: missing price`);if(!l.name)warns.push(`Line ${i+1}: no item name`);const k=l.cat+'|'+norm(l.name);if(l.name&&seen[k])warns.push(`Line ${i+1}: duplicate selection "${l.name}"`);seen[k]=1});
+ const dups=[];r.lines.forEach((l,i)=>{const p=prevItem(rc,l);if(p){const ok=!!l.dupOk;dups.push({i,ok,name:l.name,...p});if(!ok)warns.push(`Line ${i+1}: "${l.name}" is already in memo ${p.memoId} (${p.at}) – the same item cannot go into a new memo`)}});
+ if(c.community!=null&&c.child!=null&&c.total!=null&&Math.abs(c.community+c.child-c.total)>.005)warns.push('Imported community + child allocation does not equal total budget');
+ return{rate,limit,req,rem:limit-req,over:req>limit+0.5,warns,dups,limitCommunity:(c.community||0)*rate,limitChild:limit}}
+
+function getReq(rc){if(!S.req[rc])S.req[rc]={lines:[],ref:null,version:0,exc:null,versions:[]};return S.req[rc]}
+const lineTotal=l=>(Number(l.qty)||0)*(Number(l.price)||0);
+
+const IMP={};
+const DASH={gn:null,corr:null,url:'https://djonskiwivhsmgwjkhku.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqb25za2l3aXZoc21nd2praGt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1Nzc5NTYsImV4cCI6MjEwNDE1Mzk1Nn0.h67QIr0HxchgLc0tVvfpwvdJCk_cLECCtkqt6u37IyU',sb:null,rc:null,idx:null,cvcMap:null,n:0,at:'',err:''};
+const DKEY={users:'sd:users:v1',rc:'sd:rc:v1',cvcmap:'sd:cvcmap:v1'};
+const VILLAGE_NAME_KH_MAP = {
+  'talam kandal': 'តាឡំកណ្តាល',
+  'trang': 'ត្រាង',
+  'srah reang': 'ស្រះរាំង',
+  'trabaek': 'ត្របែក',
+  'dang run kaeut': 'ដងរុនកើត',
+  'kouk chrab': 'គោកច្រាប',
+  'ta in pir': 'តាអ៊ិន២',
+  'boeng khleang kaeut': 'បឹងឃ្លាំងកើត',
+  'ta in muoy': 'តាអ៊ិន១',
+  'dang run lech': 'ដងរុនលិច',
+  'preah srae': 'ព្រះស្រែ',
+  'talam chong': 'តាឡំចុង',
+  'kouk tonloab': 'គោកទន្លាប់',
+  'khile': 'ឃីឡិក',
+  'krouch': 'ក្រូច',
+  'chamkar chek': 'ចំការចេក',
+  'chong kouk': 'ចុងគោក',
+  'boeng khleang lech': 'បឹងឃ្លាំងលិច',
+  'khla kham chhkae': 'ខ្លាខាំឆ្កែ',
+  'ta chan': 'តាចាន់',
+  'kouk srok': 'គោកស្រុក',
+  'kouk krasang': 'គោកក្រសាំង',
+  'kouk pnov': 'គោកព្នៅ',
+  'samrong pen': 'សំរោងពេន',
+  'ou thom': 'អូរធំ',
+  'phnom': 'ភ្នំ',
+  'pongro': 'ពង្រ',
+  'banteay neang': 'បន្ទាយនាង',
+  'prey changha lech': 'ព្រៃចង្ហាលិច',
+  'prey changha koeut': 'ព្រៃចង្ហាកើត',
+  'ou andoung lech': 'អូរអណ្តូងលិច',
+  'ou andoung lich': 'អូរអណ្តូងលិច', // legacy spelling on file, same village as "lech" above
+  'ou andoung kandal': 'អូរអណ្តូងកណ្តាល',
+  'ou andoung koeut': 'អូរអណ្តូងកើត',
+  'boeng veng': 'បឹងវែង',
+  'kouk kduoch': 'គោកក្តួច',
+};
+const dNormVillage=raw=>{if(!raw)return'';let s=String(raw).trim().replace(/^community\s*[:\-]\s*/i,'').replace(/^[A-Za-z]{1,4}\d{2,6}\s*-\s*\d{3,8}\s*-\s*/,'').trim();return s?(VILLAGE_NAME_KH_MAP[s.toLowerCase()]||s):''};
+async function dSb(){if(!window.supabase)throw new Error('Supabase library did not load (offline?)');if(!DASH.sb){DASH.sb=supabase.createClient(DASH.url,DASH.key,{auth:{persistSession:false}});const r=await DASH.sb.auth.signInAnonymously();if(r.error)throw r.error}return DASH.sb}
+async function dGet(key,att=0){const sb=await dSb(),id=String(key).replace(/\//g,'_');
+ const {data,error}=await sb.from('shared_kv').select('*').eq('id',id).maybeSingle();if(error)throw error;if(!data)return null;if(!data.chunked)return data.value;
+ const ids=Array.from({length:data.chunk_count},(_,i)=>id+'__c'+i);const {data:rows,error:e2}=await sb.from('shared_kv').select('*').in('id',ids);if(e2)throw e2;
+ const by={};(rows||[]).forEach(r=>by[r.id]=r);const ok=ids.every(i=>by[i]&&(!data.write_id||by[i].write_id===data.write_id));
+ if(!ok&&att<5){await new Promise(r=>setTimeout(r,200*(att+1)));return dGet(key,att+1)}
+ return ids.map(i=>by[i]?by[i].value:'').join('')}
+function dCvcFor(r){if(r.CvcNameKh&&String(r.CvcNameKh).trim())return String(r.CvcNameKh).trim();
+ const cands=[r.VillageKh,dNormVillage(r.CommunityName),r.CommunityName].map(v=>(v||'').trim()).filter(Boolean),map=DASH.cvcMap||{};
+ for(const c of cands)if(map[c])return map[c];const nc=cands.map(c=>c.toLowerCase());for(const v in map)if(nc.includes(v.trim().toLowerCase()))return map[v];return''}
+const dRec=id=>DASH.idx?DASH.idx[String(id||'').trim().toUpperCase()]:null;
+const dCvcOf=id=>{const r=dRec(id);return r?dCvcFor(r):''};
+function dChild(id){const r=dRec(id);if(!r)return null;const kh=String(r.ChildNameKh||'').replace(/\s+/g,' ').trim();
+ return{nameKh:hasKh(kh)?kh:'',nameEn:String(r.ChildNameEn||'').trim(),gender:r.GenderKh||r.Gender||'',age:r.Age||r.AgeKh||'',villageKh:(r.VillageKh&&String(r.VillageKh).trim())||dNormVillage(r.CommunityName)||'',sponsorKh:r.SponsorNameKh||'',cvc:dCvcFor(r)}}
+
+async function dLoad(){DASH.err='';try{const [rc,cm]=await Promise.all([dGet(DKEY.rc),dGet(DKEY.cvcmap)]);if(!rc)throw new Error('Dashboard roster (sd:rc:v1) is empty');
+  const o=JSON.parse(rc);DASH.cvcMap=cm?JSON.parse(cm):{};DASH.idx={};let n=0;for(const k in o){const r=o[k];if(!r)continue;const id=String(r.ChildID||k).trim().toUpperCase();DASH.idx[id]=r;n++}
+  DASH.rc=o;DASH.n=n;DASH.at=new Date().toLocaleString();IMP.res=null}catch(e){DASH.idx=null;DASH.err='Dashboard not reachable: '+(e.message||e)}return !!DASH.idx}
+
+const dUsers=async()=>{const v=await dGet(DKEY.users);return v?JSON.parse(v):[]};
+/* ================= CVC phone app ================= */
+const KEY='gncvc_v1',SES='gncvc_sess',$=s=>document.querySelector(s);
+const blank=()=>({v:1,rate:4000,children:{},req:{},batches:[],audit:[],seq:0,gn:{},hist:{},memos:[],memoSeq:0,cats:[],items:[],rules:{},ui:{lang:'km'},mine:null});
+let S=(()=>{try{const j=localStorage.getItem(KEY);if(j)return JSON.parse(j)}catch(e){}return blank()})();
+S.ui=S.ui||{lang:'km'};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+function toast(m){const e=$('#toast');e.textContent=m;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',3500)}
+function log(a,rc,d){S.audit.unshift({at:new Date().toISOString(),user:ME?ME.name:'',role:'cvc',action:a,rc:rc||'',detail:d||''});S.audit=S.audit.slice(0,300)}
+let ME=null,V={s:'home',rc:null,f:'todo',q:'',pick:false,pc:'',pq:''};
+const editable=c=>['Published to CVC','Draft Request'].includes(c.status);
+const TODO=['Published to CVC','Draft Request'];
+function mine(){let l=Object.values(S.children).filter(c=>STATUSES.indexOf(c.status)>=2);if(!ME)return[];if(ME.role==='admin')return l;
+ if(DASH.idx){const me=norm(ME.name),ids=l.filter(c=>norm(dCvcOf(c.rcId))===me).map(c=>c.rcId);S.mine={u:ME.username,ids};save();return l.filter(c=>ids.includes(c.rcId))}
+ return S.mine&&S.mine.u===ME.username?l.filter(c=>S.mine.ids.includes(c.rcId)):[]}
+/* ---- login (same MBR2 dashboard accounts) ---- */
+function lock(on,m){$('#login').style.display=on?'flex':'none';const e=$('#lerr');e.style.display=m?'block':'none';e.textContent=m||''}
+async function start(u,offline){ME={username:u.username,role:u.role==='admin'?'admin':'cvc',name:u.displayName||u.username};
+ if(!offline){await dLoad();}lock(false);$('#who').textContent=ME.name+(DASH.idx?'':' · offline');V={s:'home',rc:null,f:'todo',q:'',pick:false};render();if(!offline)liveSync(true)}
+async function tryLogin(){const un=$('#luser').value.trim().toLowerCase(),pin=$('#lpin').value.trim();if(!un||!pin)return lock(true,'Enter username and PIN');
+ $('#lgo').disabled=true;$('#lstat').textContent='…';
+ try{const users=await dUsers();const m=users.find(x=>String(x.username||'').trim().toLowerCase()===un&&String(x.pin)===pin);
+  if(!m)lock(true,'ឈ្មោះអ្នកប្រើ ឬ PIN មិនត្រឹមត្រូវ · Incorrect username or PIN');
+  else{localStorage.setItem(SES,JSON.stringify({u:m,at:Date.now()}));$('#lpin').value='';await start(m)}}
+ catch(e){const s=JSON.parse(localStorage.getItem(SES)||'null');if(s&&s.u.username.toLowerCase()===un&&String(s.u.pin)===pin&&Date.now()-s.at<30*864e5){await start(s.u,true);toast('Offline mode')}else lock(true,'No connection · គ្មានអ៊ីនធឺណិត')}
+ $('#lgo').disabled=false;$('#lstat').textContent=''}
+function logout(){localStorage.removeItem(SES);ME=null;DASH.idx=DASH.rc=DASH.cvcMap=null;lock(true)}
+$('#lgo').onclick=tryLogin;$('#lpin').onkeydown=e=>{if(e.key==='Enter')tryLogin()};$('#bo').onclick=logout;
+$('#bl').onclick=()=>{const o=['km','en','both'];S.ui.lang=o[(o.indexOf(S.ui.lang)+1)%3];save();render()};
+/* ---- home ---- */
+const due=c=>{const d=daysLeft(c.due);return c.due?`${esc(c.due)} <span class="${d<0?'late':''}">(${d<0?-d+'d '+t('late','យឺត'):d+'d'})</span>`:'—'};
+function home(){const all=mine().sort((a,b)=>(a.due||'9')<(b.due||'9')?-1:1);
+ const n=f=>all.filter(f).length,todo=n(c=>TODO.includes(c.status)),sub=n(c=>STATUSES.indexOf(c.status)>=4),over=n(c=>TODO.includes(c.status)&&ledger(c.rcId).over);
+ let l=all.filter(c=>V.f==='all'||(V.f==='todo'?TODO.includes(c.status):STATUSES.indexOf(c.status)>=4)).filter(c=>!V.q||[c.rcId,c.nameKh,c.nameEn,c.village].some(x=>norm(x).includes(norm(V.q))));
+ return `<div class="grid" style="grid-template-columns:1fr 1fr 1fr"><div class="stat w"><b>${todo}</b><span>${t('To do','ត្រូវធ្វើ')}</span></div><div class="stat"><b>${sub}</b><span>${t('Submitted','បានដាក់ស្នើ')}</span></div><div class="stat e"><b>${over}</b><span>${t('Over budget','លើសថវិកា')}</span></div></div>
+ <div style="height:12px"></div>
+ <div class="chips">${[['todo','To do','ត្រូវធ្វើ'],['sub','Submitted','បានដាក់ស្នើ'],['all','All','ទាំងអស់']].map(([k,e,m])=>`<button class="chip ${V.f===k?'on':''}" onclick="V.f='${k}';render()">${t(e,m)}</button>`).join('')}</div>
+ <input id="q" placeholder="🔍 ${t('Search name, RC ID, village','ស្វែងរក')}" value="${esc(V.q)}" style="width:100%;margin-bottom:12px">
+ ${!Object.keys(S.children).length?`<div class="msg warn">${t('No data yet. Tap “Load data” and choose the backup file from your GN Coordinator.','មិនទាន់មានទិន្នន័យ។ ចុច “ទាញទិន្នន័យ” ហើយជ្រើសឯកសារពីអ្នកសម្របសម្រួល GN។')}</div>`:''}
+ <div id="cl">${cards(l)}</div>
+ <div class="card" style="margin-top:14px"><button class="b big" onclick="liveSync()">☁ ${t('Sync now','ធ្វើសមកាលកម្ម')}</button><div class="g2"><label class="b s" style="text-align:center">⬆ ${t('Load data','ទាញទិន្នន័យ')}<input type="file" accept=".json,application/json" hidden onchange="loadFile(this.files[0])"></label><button class="b s" onclick="share()">📤 ${t('Send my work','ផ្ញើការងារ')}</button></div><div class="mut" style="margin-top:8px;font-size:12px">${S.imported?t('Data loaded: ','ទិន្នន័យ៖ ')+esc(S.imported):''}</div></div>`}
+function cards(l){return l.map(c=>{const L=ledger(c.rcId),p=Math.min(100,L.limit?L.req/L.limit*100:0);return `<div class="card ch" onclick="openC('${c.rcId}')"><div class="top"><div><b>${esc(c.nameKh||c.nameEn)}</b><br><small class="mut">${esc(c.rcId)} · ${esc(c.village)}</small></div><div>${stTag(c.status)}</div></div><div class="bar" style="margin-top:8px"><i class="${L.over?'o':''}" style="width:${p}%"></i></div><div class="meta"><span>${t('Budget','ថវិកា')} <b>${usd(pBudget(c))}</b></span><span>${t('Due','ផុតកំណត់')} ${due(c)}</span></div></div>`}).join('')||`<div class="empty">✅ ${t('Nothing here','គ្មានអ្វីទេ')}</div>`}
+/* ---- child ---- */
+function openC(rc){V.s='child';V.rc=rc;scrollTo(0,0);render()}
+function back(){V.s='home';V.pick=false;render()}
+function lineCard(l,i,ed){const k=(f,x='')=>`data-i="${i}" data-k="${f}" ${ed?'':'disabled'} ${x}`;
+ return `<div class="card"><div class="lh"><div><b>${esc(l.name)||'—'}</b><br><small class="mut">${esc(catName(l.cat))}</small></div>${ed?`<button class="x" onclick="del(${i})">✕</button>`:''}</div>
+ <div class="r3"><div><label>${t('Qty','ចំនួន')}</label><div class="step">${ed?`<button onclick="qty(${i},-1)">−</button>`:''}<input type="number" inputmode="decimal" min="0" step="any" value="${esc(l.qty)}" ${k('qty')}>${ed?`<button onclick="qty(${i},1)">+</button>`:''}</div></div>
+ <div><label>${t('Price ៛','តម្លៃ ៛')}</label><input type="number" inputmode="numeric" min="0" value="${esc(l.price)}" ${k('price')}></div><div><label>${t('Unit','ខ្នាត')}</label><input value="${esc(l.unit)}" ${k('unit')}></div></div>
+ <input style="width:100%;margin-top:8px" placeholder="${t('Specification / remark','លក្ខណៈ / កំណត់សម្គាល់')}" value="${esc(l.spec)}" ${k('spec')}>
+ <div class="stot" id="st${i}">${khr(lineTotal(l))}</div></div>`}
+function child(){const c=S.children[V.rc],r=getReq(V.rc),ed=editable(c);
+ return `<div class="bk"><button class="b s" onclick="back()">←</button><div><b>${esc(c.nameKh||c.nameEn)}</b><br><small class="mut">${esc(c.rcId)} · ${esc(c.gender)} ${esc(c.age)} · ${esc(c.village)}<br>${t('Due','ផុតកំណត់')} ${due(c)}</small></div></div>
+ <div class="card"><div class="g2"><div class="stat"><b>${usd(pBudget(c))}</b><span>${t('Child/family budget','ថវិកាកុមារ/គ្រួសារ')}</span></div><div class="stat" id="rem"></div></div><div class="bar" style="margin-top:10px"><i id="bf"></i></div><div style="margin-top:8px">${stTag(c.status)} ${r.ref?`<span class="tag">${esc(r.ref)} v${r.version}</span>`:''}</div><div id="warns"></div></div>
+ <div class="card"><div class="row"><div style="flex:1"><label>${t('Guardian phone','លេខទូរស័ព្ទ')}</label><input id="cph" type="tel" style="width:100%" value="${esc(c.phone||'')}" ${ed?'':'disabled'}></div><div style="flex:1"><label>${t('Sponsor name','ឈ្មោះអ្នកទំនុកបម្រុង')}</label><input id="csp" style="width:100%" value="${esc(c.sponsor||'')}" ${ed?'':'disabled'}></div></div></div>
+ <h3 style="margin:4px 2px 8px">${t('Selected items','សម្ភារៈដែលបានជ្រើស')} (${r.lines.length})</h3>
+ ${r.lines.map((l,i)=>lineCard(l,i,ed)).join('')||`<div class="empty">${t('No items yet','មិនទាន់មានសម្ភារៈ')}</div>`}
+ ${ed?`<button class="b a big" onclick="V.pick=true;V.pc=V.pc||S.cats[0].id;render()">＋ ${t('Add item','បន្ថែមសម្ភារៈ')}</button>`:`<div class="msg info">${t('Already submitted – read only.','បានដាក់ស្នើរួច – មើលតែប៉ុណ្ណោះ។')}</div>`}
+ ${ed?`<div class="bottom"><button class="b s" onclick="draft()">💾 ${t('Save draft','រក្សាទុកព្រាង')}</button><button class="b" onclick="submit()">✔ ${t('Submit','ដាក់ស្នើ')}</button></div>`:`<div class="bottom"><button class="b" onclick="share()">📤 ${t('Send my work','ផ្ញើការងារ')}</button></div>`}
+ ${V.pick?picker():''}`}
+function upd(){const c=S.children[V.rc];if(!c)return;const r=getReq(V.rc),L=ledger(V.rc),p=L.limit?Math.min(100,L.req/L.limit*100):0;
+ $('#rem').innerHTML=`<b style="color:${L.over?'var(--err)':'var(--pri)'}">${khr(L.rem)}</b><span>${t('Remaining','នៅសល់')} · ${khr(L.req)}</span>`;
+ const b=$('#bf');b.style.width=p+'%';b.className=L.over?'o':'';r.lines.forEach((l,i)=>{const e=$('#st'+i);if(e)e.textContent=khr(lineTotal(l))});
+ $('#warns').innerHTML=(L.over?`<div class="msg err">⚠ ${t('Over budget by','លើសថវិកា')} ${khr(L.req-L.limit)}</div>`:'')+L.warns.map(w=>`<div class="msg warn">${esc(w)}</div>`).join('')}
+document.addEventListener('input',e=>{const x=e.target;if(x.id==='q'){V.q=x.value;$('#cl').innerHTML=cards(mine().filter(c=>(V.f==='all'||(V.f==='todo'?TODO.includes(c.status):STATUSES.indexOf(c.status)>=4))&&(!V.q||[c.rcId,c.nameKh,c.nameEn,c.village].some(y=>norm(y).includes(norm(V.q))))))}
+ if(x.dataset.k&&V.s==='child'){getReq(V.rc).lines[x.dataset.i][x.dataset.k]=x.value;save();upd()}
+ if(x.id==='cph'||x.id==='csp'){S.children[V.rc][x.id==='cph'?'phone':'sponsor']=x.value.trim();save()}
+ if(x.id==='pq'){V.pq=x.value;$('#plist').innerHTML=plist()}});
+function qty(i,d){const l=getReq(V.rc).lines[i];l.qty=Math.max(0,(Number(l.qty)||0)+d);save();keep()}
+function del(i){if(!confirm(t('Remove this item?','លុបសម្ភារៈនេះ?')))return;getReq(V.rc).lines.splice(i,1);save();keep()}
+function keep(){const y=scrollY;render();scrollTo(0,y)}
+/* ---- item picker ---- */
+function plist(){const its=S.items.filter(i=>i.cat===V.pc&&(!V.pq||norm(i.name).includes(norm(V.pq))));
+ return its.map((it,k)=>`<button class="pi" onclick="pickItem(${S.items.indexOf(it)})"><span>${esc(it.name)}</span><span class="mut">${it.price?khr(it.price):''}</span></button>`).join('')||`<div class="empty">${t('No match – use “Other item” below','រកមិនឃើញ – ប្រើ “សម្ភារៈផ្សេង”')}</div>`}
+function picker(){return `<div class="sheet" onclick="if(event.target===this){V.pick=false;render()}"><div><div class="top" style="margin-bottom:8px"><h3 style="margin:0">${t('Choose item','ជ្រើសសម្ភារៈ')}</h3><button class="b s" style="min-height:36px;padding:4px 12px" onclick="V.pick=false;render()">✕</button></div>
+ <div class="chips">${S.cats.map(c=>`<button class="chip ${c.id===V.pc?'on':''}" onclick="V.pc='${c.id}';V.pq='';render()">${esc(c.name)}</button>`).join('')}</div>
+ <input id="pq" placeholder="🔍 ${t('Search item','ស្វែងរកសម្ភារៈ')}" value="${esc(V.pq)}" style="width:100%"><div id="plist">${plist()}</div>
+ <div class="row" style="margin-top:12px"><div style="flex:1"><label>${t('Other item (type name)','សម្ភារៈផ្សេង (វាយឈ្មោះ)')}</label><input id="oth" style="width:100%"></div><button class="b" onclick="pickOther()">＋</button></div></div></div>`}
+function addL(o){getReq(V.rc).lines.push(Object.assign({cat:V.pc,name:'',spec:'',qty:1,unit:'',price:'',supplier:'',remark:''},o));V.pick=false;save();render();setTimeout(()=>scrollTo(0,document.body.scrollHeight),50)}
+function pickItem(i){const it=S.items[i];addL({name:it.name,unit:it.unit||'',price:it.price||'',supplier:it.supplier||''})}
+function pickOther(){const v=$('#oth').value.trim();if(!v)return toast(t('Type a name','សូមវាយឈ្មោះ'));addL({name:v})}
+/* ---- actions (same rules as the dashboard: cannot submit over budget / zero qty / missing price / repeat item) ---- */
+function draft(){const c=S.children[V.rc];c.status='Draft Request';log('Save draft',V.rc);save();pushChild(V.rc);toast(t('Saved','បានរក្សាទុក'));back()}
+function submit(){const rc=V.rc,c=S.children[rc],r=getReq(rc),L=ledger(rc);
+ if(!r.lines.length)return toast(t('Add at least one item','សូមបន្ថែមសម្ភារៈយ៉ាងតិចមួយ'));
+ if(L.warns.some(w=>/zero|missing price|no item|already in memo/.test(w)))return toast(t('Fix zero quantities / missing prices first','សូមកែចំនួនសូន្យ ឬតម្លៃដែលបាត់'));
+ if(L.over)return toast(t('Over budget – reduce items first','លើសថវិកា – សូមកាត់បន្ថយសម្ភារៈ'));
+ if(!confirm(t('Submit this request for review?','ដាក់ស្នើសំណើនេះ?')))return;
+ r.version++;r.versions.push({v:r.version,at:new Date().toISOString(),by:ME.name,total:L.req,lines:JSON.parse(JSON.stringify(r.lines))});
+ if(!r.ref){const d=new Date();r.ref=`GN-${String(d.getFullYear()).slice(2)}${String(d.getMonth()+1).padStart(2,'0')}-${Date.now().toString(36).slice(-4).toUpperCase()}`}
+ c.status='Submitted by CVC';log('Submit for review',rc,r.ref);save();pushChild(rc);toast(t('Submitted. Reference: ','បានដាក់ស្នើ។ លេខយោង៖ ')+r.ref);back()}
+/* ---- data in / out ---- */
+function loadFile(f){if(!f)return;const rd=new FileReader();rd.onload=e=>{try{const o=JSON.parse(e.target.result);if(o.v!==1||!o.children)throw 0;
+ const old=S;S=Object.assign(blank(),o);S.ui=Object.assign({},o.ui||{},{lang:old.ui.lang});S.mine=old.mine;S.audit=old.audit||[];
+ for(const rc in old.req){const lo=old.children[rc],nw=S.children[rc];if(nw&&lo&&old.req[rc].lines.length&&['Draft Request','Submitted by CVC'].includes(lo.status)&&['Published to CVC','Draft Request'].includes(nw.status)){S.req[rc]=old.req[rc];nw.status=lo.status}}
+ prune();
+ S.imported=new Date().toLocaleString();save();toast(t('Data loaded','បានទាញទិន្នន័យ'));render()}catch(x){toast(t('Invalid file','ឯកសារមិនត្រឹមត្រូវ'))}};rd.readAsText(f)}
+async function share(){const sub={};mine().forEach(c=>{if(STATUSES.indexOf(c.status)>=3&&c.status!=='Published to CVC')sub[c.rcId]={status:c.status,phone:c.phone||'',sponsor:c.sponsor||'',req:S.req[c.rcId]}});
+ if(!Object.keys(sub).length)return toast(t('Nothing to send yet','មិនទាន់មានអ្វីត្រូវផ្ញើ'));
+ const blob=new Blob([JSON.stringify({kind:'cvc-submission',v:1,by:ME.name,at:new Date().toISOString(),children:sub,audit:S.audit.slice(0,50)})],{type:'application/json'});
+ const fn=`gn-cvc-${(ME.username||'cvc').replace(/\W/g,'')}-${new Date().toISOString().slice(0,10)}.json`,f=new File([blob],fn,{type:'application/json'});
+ try{if(navigator.canShare&&navigator.canShare({files:[f]}))return await navigator.share({files:[f],title:'GN CVC'})}catch(e){if(e.name==='AbortError')return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;a.click()}
+/* ---- LIVE sync with the dashboard database (rows 'gncvc:*' in shared_kv only) ---- */
+function prune(){const keep=new Set(mine().map(c=>c.rcId));if(ME&&ME.role!=='admin'&&(DASH.idx||(S.mine&&S.mine.u===ME.username))){for(const k of ['children','req','hist'])for(const rc in S[k])if(!keep.has(rc))delete S[k][rc];for(const k in S.gn)if(!keep.has(S.gn[k].rc))delete S.gn[k]}}
+async function lvPut(id,value){const sb=await dSb();const {error}=await sb.from('shared_kv').upsert({id,value,chunked:false});if(error)throw error}
+async function pushChild(rc){const c=S.children[rc];if(!c||!ME)return;c.liveAt=new Date().toISOString();
+ try{await lvPut('gncvc:sub:'+rc,JSON.stringify({rc,status:c.status,phone:c.phone||'',sponsor:c.sponsor||'',req:S.req[rc],at:c.liveAt,by:ME.name}));c.dirty=false;save();toast('☁ '+t('Synced','បានសមកាលកម្ម'))}
+ catch(e){c.dirty=true;save();toast(t('Saved on phone – will sync when online','បានរក្សាទុក – នឹងសមកាលកម្មពេលមានអ៊ីនធឺណិត'))}}
+function applyPub(o){const old=S;S=Object.assign(blank(),o);S.ui=Object.assign({},o.ui||{},{lang:old.ui.lang});S.mine=old.mine;S.audit=old.audit||[];
+ for(const rc in old.req){const lo=old.children[rc],nw=S.children[rc];if(nw&&lo&&old.req[rc].lines.length&&(lo.liveAt||'')>(o.pubAt||'')&&['Draft Request','Submitted by CVC'].includes(lo.status)){S.req[rc]=old.req[rc];Object.assign(nw,{status:lo.status,liveAt:lo.liveAt,phone:lo.phone,sponsor:lo.sponsor,dirty:lo.dirty})}}
+ prune();S.imported=new Date().toLocaleString()}
+async function liveSync(q){if(!ME)return;try{for(const rc in S.children)if(S.children[rc].dirty)await pushChild(rc);const raw=await dGet('gncvc:pub:v1');
+ if(!raw){if(!q)toast(t('Nothing published yet','មិនទាន់មានទិន្នន័យ'));return}applyPub(JSON.parse(raw));save();render();if(!q)toast('☁ '+t('Up to date','ទាន់សម័យ'))}
+ catch(e){if(!q)toast(t('Sync failed: ','សមកាលកម្មបរាជ័យ៖ ')+(e.message||e))}}
+function render(){$('#bl').textContent=S.ui.lang==='km'?'ខ្មែរ':S.ui.lang==='en'?'EN':'ខ/EN';if(!ME)return;$('#app').innerHTML=V.s==='home'?home():child();if(V.s==='child')upd()}
+(async()=>{if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+ try{const s=JSON.parse(localStorage.getItem(SES)||'null');if(s&&Date.now()-s.at<12*36e5){try{await start(s.u)}catch(e){await start(s.u,true)}}}catch(e){}})();
+</script></body></html>
